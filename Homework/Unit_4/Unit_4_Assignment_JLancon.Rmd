@@ -1,0 +1,111 @@
+---
+title: "MSDS6306 Unit 4 Assignment"
+author: "J Lancon"
+date: "October 01, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+### Question 1
+FiveThirtyEight Data:  Navigate on GitHub to https://github.com/rudeboybert/fivethrityeight and read README.md.
+
+**1.a**  Install the fivethirtyeight package:
+  
+#### Install 'FiveThirtyEight' library from CRAN
+
+> install.packages("fivethirtyeight")
+Installing package into ‘C:/Users/Prodigy/Documents/R/win-library/3.4’
+(as ‘lib’ is unspecified)
+trying URL 'https://cran.rstudio.com/bin/windows/contrib/3.4/fivethirtyeight_0.3.0.zip'
+Content type 'application/zip' length 4398562 bytes (4.2 MB)
+downloaded 4.2 MB
+
+package ‘fivethirtyeight’ successfully unpacked and MD5 sums checked
+
+The downloaded binary packages are in
+	C:\Users\Prodigy\AppData\Local\Temp\Rtmp8e5vCO\downloaded_packages
+
+
+**1.b** In the listing of Data sets in package 'fivethirtyeight,' assign the eighteenth data set to an object 'df'.
+
+```{r CollegeGrads}
+#data(package = "fivethirtyeight")
+
+# Assigning dataset College_recent_grads, from FiveThirtyEight to df
+# Original Data from article written by Ben Casselman "The Economic Guide to Picking A College Major"
+
+df <- fivethirtyeight::college_recent_grads
+head(df)
+```
+
+**1.c** Use a more detailed list of the data set to write out the URL in a comment to the related news story.
+```{r,Information_dataset}
+vignette("fivethirtyeight") #??fivethrityeight another option
+```
+
+URL for original Article: The Economic Guide to Picking a College Major by Ben Casselman
+(Orginal Data source)
+##### https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/
+<br>
+
+**1.d** Using R command(s), give the dimensions and column names of this dataframe
+```{r Dimensions}
+dim(df)
+names(df)
+```
+There are 173 observations and 21 variables
+The names of the variables is listed above
+
+<br>
+  
+### Question 2  
+Use your newly assigned data frame for Question 2.
+
+**2.a** Write an R command that gives you the column names of the data frame. Right after that, write one that counts the number of columns but not rows. Hint: The number should match one of your numbers in Question 1d for dimensions.
+```{r,Names_Count}
+names(df)
+length(names(df)) #could also use ncol(df)
+```
+There are 21 columns(variables)
+<br>  
+**2.b**  Generate a count of each unique major_catagory in the dataframe.  I recommend using libraries to help.  To be clear, this should look like a matrix of dataframe containing the major_catagory and teh frequency it occurrs in a dataset.  Assign it to Major_count.
+```{r,majorFrequency}
+# Using Frequency fuction to get frequency of occurrances of observations in variable 'major_catagory'
+major_count_table <- table(df$major_category)
+
+# Converting table 'major_count' into a dataframe
+major_count <- as.data.frame(major_count_table)
+
+# Renaming columns
+names(major_count) <- c("Major_Catagory","Frequency")
+major_count
+```
+The college degree programs were separated inti 16 Major catagories.
+
+**2.c**  To make things easier to read, put par(las=2) before your plot to make the text perpendicular to the axis.  Make a barplot of major_count.  Make sure to label the title with something informative (check the vignette if you need), label the x and y axis and make it any color other than grey.  Assign the major_catagory labels to their respective bar.  Flip the barplot horizontally so that bars extend to the right, not upwards. All of these options can be done in a single pass of barplot(). It's okay if it's wider than the preview pane.
+```{r barplot}
+barplot(major_count_table[order(major_count_table,decreasing=TRUE)],
+        horiz = TRUE,
+        main="College Majors\n Major Catagories-Degree Programs",
+        xlab="Number of Degree Programs",
+        ylab="Major Catagories",
+        las=1,
+        xlim = c(0,max(major_count_table, na.rm=TRUE)+2),
+        cex.lab = 1.0,
+        cex.names = 0.7,
+        col='lightblue'
+)
+```
+
+**2.d**  Write the fivethirtyeight data to a csv file. Make sure tht it does not have row labels.
+
+```{r,writingcsv}
+#writing fivethirtyeight database College_recent_grads to a CSV file.
+
+write.csv(df,file="C:/Users/Prodigy/Documents/Personal Info/SMU/MSDS 6306 - Doing Data Science/Unit 4/Assignment/College_Recent_Grads.csv", row.names = FALSE)
+```
+
+
+
