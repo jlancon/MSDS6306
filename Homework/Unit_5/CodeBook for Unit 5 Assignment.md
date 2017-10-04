@@ -3,11 +3,10 @@ CodeBook for MSDS6306 Unit 5 Assignment
 
 Data source
 -----------
-The datasets were provided to the class by the instructor:  
-y2015  
-https://2ds.datascience.smu.edu/local/files/lib/download.php?id=84067&userid=1131  
-y2016  
-https://2ds.datascience.smu.edu/local/files/lib/download.php?id=84068&userid=1131
+The datasets were provided to the class by the instructor: Original data was obtained from US Social Security Administration. https://www.ssa.gov/oact/babynames/names.zip  
+yob2016.txt NOTE: This database was altered from the original: (1) Added false entry Fionayyy; (2) Changed sep=";" from ",".  
+yob2015.txt Unchanged from original file
+
 
 Feature Selection 
 -----------------
