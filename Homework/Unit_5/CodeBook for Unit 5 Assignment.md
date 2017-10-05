@@ -10,53 +10,49 @@ yob2015.txt Unchanged from original file
 
 Feature Selection 
 -----------------
-I refer you to the README and features.txt files in the original dataset to learn more about the feature selection for this dataset. And there you will find the follow description:
+A client is expecting a baby soon and he is not sure what to name the child.  The obtain a list of the top 10 Female baby names from the combined years of 2015 and 2016 and present the client with the list. The text data files were obtained from the US Social Security Administration. And there you will find the follow description:
 
-The features selected for this database come from the accelerometer and gyroscope 3-axial raw signals tAcc-XYZ and tGyro-XYZ. These time domain signals (prefix 't' to denote time) were captured at a constant rate of 50 Hz. Then they were filtered using a median filter and a 3rd order low pass Butterworth filter with a corner frequency of 20 Hz to remove noise. Similarly, the acceleration signal was then separated into body and gravity acceleration signals (tBodyAcc-XYZ and tGravityAcc-XYZ) using another low pass Butterworth filter with a corner frequency of 0.3 Hz. 
+To safeguard privacy, we [SSA] exclude from these files certain names that would indicate, or would allow the ability to determine, names with fewer than 5 occurrences in any geographic area. We provide these data on both a national and state-specific basis, in two separate collections of files, each zipped into a single file. The format of the data in the two files is described in a "readme" file contained in the respective zip files.  
 
-Subsequently, the body linear acceleration and angular velocity were derived in time to obtain Jerk signals (tBodyAccJerk-XYZ and tBodyGyroJerk-XYZ). Also the magnitude of these three-dimensional signals were calculated using the Euclidean norm (tBodyAccMag, tGravityAccMag, tBodyAccJerkMag, tBodyGyroMag, tBodyGyroJerkMag). 
+Using R, the tasks were to:
+* Tidy and merge the two data files by Names
+* Total the unique occurrances of each name (2015 & 2016) [33063 in 2015, 32868 in 2016]
+* Rank the names by decending order of Total occurrances [7.4Million]
+* Eliminate Male names
+* Create a CSV file with the top 10 Females names in 2015 & 2016 combined and number of occurrances [Most_Popular_Female_Names.csv].
 
-Finally a Fast Fourier Transform (FFT) was applied to some of these signals producing fBodyAcc-XYZ, fBodyAccJerk-XYZ, fBodyGyro-XYZ, fBodyAccJerkMag, fBodyGyroMag, fBodyGyroJerkMag. (Note the 'f' to indicate frequency domain signals). 
+Tidying the data: consisted of removing duplicate entry (Fionayyy), merging the two files yob2015 and yob2016 by name and gender, and removal of names that did not appear in both 2015 and 2016.
 
-The reasoning behind my selection of features is that the assignment explicitly states "Extracts only the measurements on the mean and standard deviation for each measurement."
-To be complete, I included all variables having to do with mean or standard deviation.
+Totaling occurrances consisted of summing frequency of occurrances of names from 2015 and 2016.
 
-In short, for this derived dataset, these signals were used to estimate variables of the feature vector for each pattern:  
-'-XYZ' is used to denote 3-axial signals in the X, Y and Z directions.
+Arranged the list of names by total frequency of occurrances in decending order.
 
-* tBodyAcc-XYZ
-* tGravityAcc-XYZ
-* tBodyAccJerk-XYZ
-* tBodyGyro-XYZ
-* tBodyGyroJerk-XYZ
-* tBodyAccMag
-* tGravityAccMag
-* tBodyAccJerkMag
-* tBodyGyroMag
-* tBodyGyroJerkMag
-* fBodyAcc-XYZ
-* fBodyAccJerk-XYZ
-* fBodyGyro-XYZ
-* fBodyAccMag
-* fBodyAccJerkMag
-* fBodyGyroMag
-* fBodyGyroJerkMag
+Eliminated Male names since client is only interested in Female names.
 
-The set of variables that were estimated (and kept for this assignment) from these signals are: 
+Created a CSV file of the top 10 Female names in 2015/2016 and frequency of occurrances.
 
-* mean(): Mean value
-* std(): Standard deviation
+Listing of key variables and brief descriptions:
 
-Additional vectors obtained by averaging the signals in a signal window sample. These are used on the angle() variable:
+yob2016 Variables 
+* FirstName       _First name of subject in yob2016 dataset_   
+* Gender          _Gender of subject (M-Male/F-Female)_
+* Frequency_2016  _Frequency of FirstName Occurrance in 2016_  
 
-* gravityMean
-* tBodyAccMean
-* tBodyAccJerkMean
-* tBodyGyroMean
-* tBodyGyroJerkMean
+yob2015 Variables
+* FirstName       _First name of subject in yob2015 dataset_
+* Gender          _Gender of subject (M-Male/F-Female)_
+* Frequency_2015  _Frequency of FirstName Occurrance in 2015_
 
-Other estimates have been removed for the purpose of this excercise.
+Derrived Variables:
+* df  _DataFrame with yob2016 variables & occurances_  
+* DuplicateName     _Duplicate name entry (artifically inserted into raw file)_
+* Final _DataFrame containing final output variable list and occurrances of top 10 female names/occurances_
+* Final$Total _Final dataframe variable which totals number of occurances of particular name in Ferquency_2015 and Frequency_2016_
+* SumTotal _Total of all frequency of occurrances for all observations_
+* FinalFemale _Dataframe containing final values of top 10 Female names and Totals_
 
-Note: features are normalized and bounded within [-1,1].
+Final Deliverable 
+-----------------
 
-The resulting variable names are of the following form: tbodyaccmeanx, which means the mean value of tBodyAcc-XYZ.
+Final Deliverable: **Most_Popular_Female_Names.csv**
+CSV file with the top 10 Females names in 2015 & 2016 combined and number of occurrances.
