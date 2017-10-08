@@ -205,6 +205,7 @@ FinalFemale[1:10,]
 ## 14502    Harper      F          10733          10283 21016
 ```
 
+
 ####3.d  
 Write these top 10 girls names and their Totals to a CSV file. Leave out the other columns entirely.
 
@@ -221,7 +222,7 @@ Upload to GitHub: Push at mimimum your RMarkdown for this homework assignment an
 
 https:\\github.com\jlancon\MSDS6306\tree\master\Homework\Unit_5
 
-
+  
 ####Reminder  
 To complete this assignment, please submit **one** RMarkdown and matching HTML file at least one hour before your live session on October 9,2017. You do not need to submit a link to your GitHub: Just note where the assignment is (URL) in your RMarkdown file.  Make sure it is public!! Please submit all files at the same time; only one submission is granted.
 
