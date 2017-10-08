@@ -128,7 +128,8 @@ FinalFemale <- subset(x=Final, Final$Gender=="F")
 #Displaying to 10 Females names for 2015&2016 combined.
 FinalFemale[1:10,]
 ```
-####3.d
+
+####3.d  
 Write these top 10 girls names and their Totals to a CSV file. Leave out the other columns entirely.
 ```{r, FileFemales}
 
@@ -140,12 +141,12 @@ write.csv(FinalFemale,file="C:/Users/Prodigy/Documents/GitRepositories/MSDS6306/
 #### Question 4
 Upload to GitHub: Push at mimimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week.)  The CodeBook should contain a short definition of each object your create, and if creating multiple files, which file it is contained in. You are welcome and encouraged to add other files-just make sure you have a description and directions that are helpful for the grader.
 
-####GitHub URL Address
+####GitHub URL Address  
 
 https:\\github.com\jlancon\MSDS6306\tree\master\Homework\Unit_5
 
 
-####Reminder
+####Reminder  
 To complete this assignment, please submit **one** RMarkdown and matching HTML file at least one hour before your live session on October 9,2017. You do not need to submit a link to your GitHub: Just note where the assignment is (URL) in your RMarkdown file.  Make sure it is public!! Please submit all files at the same time; only one submission is granted.
 
 
