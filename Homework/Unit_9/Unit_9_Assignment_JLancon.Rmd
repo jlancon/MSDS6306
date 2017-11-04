@@ -4,14 +4,14 @@ author: "J Lancon"
 date: "November 6, 2017"
 output:
   prettydoc::html_pretty:
-    theme: leonids
+    theme: tactile
     highlight: github
     fig_caption: yes
 ---
 ### Assignment: Unit 09 Assignment
 #### Course: MSDS 6306 - 405 Doing Data Science
 #### Project Description: Web Scrapping
-##### GitHub Repository: https://github.com/???????
+##### GitHub Repository: https://github.com/jlancon/MSDS6306/tree/master/Homework/Unit_9
 
 &nbsp;&nbsp;&nbsp; **Problem #1:** Navigate to IMDB website and find the movie [Harry Potter and the Deathly Hallows: Part 2](http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1).  Scrape the page with any R package you are comfortable with. We are interested is the table of the Cast in order of crediting.
 
