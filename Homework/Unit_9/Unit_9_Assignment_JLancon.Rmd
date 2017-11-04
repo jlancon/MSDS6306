@@ -1,0 +1,149 @@
+---
+title: 'MSDS 6306 Assignment 09: Web Scrapping'
+author: "J Lancon"
+date: "November 6, 2017"
+output:
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+    fig_caption: yes
+---
+### Assignment: Unit 09 Assignment
+#### Course: MSDS 6306 - 405 Doing Data Science
+#### Project Description: Web Scrapping
+##### GitHub Repository: https://github.com/???????
+
+&nbsp;&nbsp;&nbsp; **Problem #1:** Navigate to IMDB website and find the movie [Harry Potter and the Deathly Hallows: Part 2](http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1).  Scrape the page with any R package you are comfortable with. We are interested is the table of the Cast in order of crediting.
+
+* Parse down the table to only include the Actor's Name and their corresponding Character in the movie.  
+* Clean observation; eliminating empty fields and fields with improper data.  
+* One Actor plays two characters, whos character name(s) has special(\n) characters in its description.  Replace his character name, removing special characters, so it displays properly.  
+* The Actor variable includes first name and surname.  Split the variable into FirstName and Surname.  Play special attention to multiple names/middle names, etc.  
+* Display the first 10 rows of the 'cleaned' dataframe with 3 variables (FirstName, Surname, Character)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+library(knitr)
+library(stringr)
+library(rvest)
+library(ggplot2)
+```
+##### Reading Website / Scrapping Data
+&nbsp;&nbsp;&nbsp;**Reading website** into R
+Website Address for movie: http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1  
+
+```{r ReadingHtml}
+URLMovie <- read_html("http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1")
+```
+&nbsp;&nbsp;&nbsp;**Scrapping Table** with Actor & Character information
+```{r ScrappingTable}
+# From YouTube video https://www.youtube.com/watch?v=gSbuwYdNYLM
+Table_Data <- URLMovie %>%
+      html_nodes('table') %>% .[[3]] %>%
+      html_table()
+```
+&nbsp;&nbsp;&nbsp;**Parsing Table** to only include Actor's Full Name and corresponding Character in movie.
+```{r ParsingTable}
+Actor_Character.df <- Table_Data[,c(2,4)]
+colnames(Actor_Character.df) <- c("ActorFullName","Character")
+```
+&nbsp;&nbsp;&nbsp;**Cleaning erroneous observations** and modifying Character observation for Actor who plays multiple roles(eliminating special character(s))  
+```{r CleaningData}
+Actor_Character.df <- Actor_Character.df[- grep("Rest of cast listed",Actor_Character.df$ActorFullName),]
+Actor_Character.df <- Actor_Character.df[!apply(Actor_Character.df == "",1,all),]
+Character.df <- as.data.frame(sapply(Actor_Character.df[,2],gsub,pattern=".*Grip.*",replacement="Griphook / Professor Filius Flitwick"))
+```
+&nbsp;&nbsp;&nbsp;**Splitting Actor Name Field** into First Name and Surname, using technique that will leave Middle names and/or multiple first names in First Name field.  
+
+```{r SplittingName}
+First_Surname.df <- as.data.frame(str_split_fixed(Actor_Character.df$ActorFullName, ' (?=[^ ]+$)',2))
+#Alternate Solution
+#First_Surname.df <- as.data.frame(do.call(rbind, strsplit(Actor_Character_Data$Actor, ' (?=[^ ]+$)', perl=TRUE)))
+```
+&nbsp;&nbsp;&nbsp;**Combining Dataframes** into Cleaned Dataset for use in future analysis.  
+&nbsp;&nbsp;&nbsp;**Displaying Table** for reference. Only displaying first 10 observations.
+
+```{r TableDisplay}
+FinalList.df <- cbind(First_Surname.df,Character.df)
+colnames(FinalList.df) <- c("FirstName", "Surname", "Character")
+
+kable(head(FinalList.df,10), align="c", caption="Harry Potter and the Deathly Hallows: Part 2 Cast and Character",format="markdown",row.names = FALSE)
+```
+: **Harry Potter and the Deathly Hallows Part 2:  Cast and Characters**
+
+***
+
+
+#########################################################
+#########################################################
+&nbsp;&nbsp;&nbsp; **Problem #2:** Navigate to ESPN website, there are statistics of each NBA player, and find the [San Antonio Spurs stats webpage](http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs); which displays player's current statistics.
+
+* Interested in **Shooting Statistics** table.
+* Parse down the table to only include the Player's Name and Field Goal Percentage (FG%).  
+* Clean observation; eliminating empty fields and fields with improper data.  
+* One Actor plays two characters, whos character name(s) has special(\n) characters in its description.  Replace his character name, removing special characters, so it displays properly.  
+* The Player catagory includes the Full Name of player as well as position.  Split the variable into Player Name and Position.  
+* Create a 'cleaned' dataset with Player's Name, Position, and Field Goal Percentage
+* Create a bar graph displaying Player and their FG%.  Color the columns by the Player's position.  
+
+##### Reading Website / Scrapping Data
+&nbsp;&nbsp;&nbsp;**Reading website** into R
+Website Address for Team stats: http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs  
+```{r SpursURL}
+URLSpurs <- read_html('http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs')
+```
+
+&nbsp;&nbsp;&nbsp;**Scrapping Table** with Player and Statistics information
+```{r ScrapTableSpurs}
+Table_Data_Spurs <- URLSpurs %>%
+  html_nodes('table') %>% .[[2]] %>%
+  html_table()
+```
+
+&nbsp;&nbsp;&nbsp;**Parsing Table** to only include Player's Name and FG% statistics.  
+```{r SpurParsing}
+Player_FGP.df <- Table_Data_Spurs[,c(1,4)]
+```
+
+&nbsp;&nbsp;&nbsp;**Cleaning Erroneous Observations** 
+```{r CleaningSpurs}
+Player_FGP.df <- Player_FGP.df[- grep("Totals",Player_FGP.df$X1),]
+Player_FGP.df <- Player_FGP.df[- grep("SHOOTING STATISTICS",Player_FGP.df$X1),]
+Player_FGP.df <- Player_FGP.df[- grep("PLAYER",Player_FGP.df$X1),]
+```
+
+&nbsp;&nbsp;&nbsp;**Extracting Variable and Changing Data Class** of FG% from Character to Numeric. 
+```{r FGPExtraction}
+FGPercent.df <- as.data.frame(as.numeric(Player_FGP.df$X4))
+```
+
+&nbsp;&nbsp;&nbsp;**Splitting Player's Name Variable** into Player's Name and Position. Eliminate unnecessary characters "," in variable observations.
+```{r PlayerSplitting}
+Player_Position.df <- as.data.frame(str_split_fixed(Player_FGP.df$X1, ' (?=[^ ]+$)',2))
+Player_Position.df <- as.data.frame(sapply(Player_Position.df,gsub,pattern=",",replacement=""))
+```
+
+&nbsp;&nbsp;&nbsp;**Combining Dataframes** into Cleaned Dataset with Player's Name, Position, and FG%.  
+```{r FinalSpurs}
+Final.df <- cbind(Player_Position.df,FGPercent.df)
+colnames(Final.df) <- c("Player", "Position", "FG_Percent")
+Final.df <- Final.df[order(Final.df$FG_Percent, decreasing = TRUE), ]
+```
+
+&nbsp;&nbsp;&nbsp;**SA Spurs Bar Graph** displaying Player's current Field Goal Percentages for 2017/18 season.
+```{r barGraphSpurs}
+ggplot(data=Final.df, aes(x=reorder(Player, order(Final.df$FG_Percent, decreasing=FALSE)),y=(FG_Percent*100),fill=Position)) +
+  geom_bar(position="dodge",stat="identity") + 
+  scale_fill_brewer(palette="Spectral") +
+#  scale_fill_hue(c=80, l=60) +
+  coord_flip() +
+  xlab("Players") +
+  ylab("Field Goal Percentage") +
+  ggtitle("San Antonio Spurs 2017/18\n Field Goal Percentages") +
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size=14)) +
+  theme(axis.title = element_text(face="bold", size=10)) +
+  theme(axis.title.y = element_text(face="bold", size=10)) +
+  theme(panel.border = element_rect(linetype = "solid", fill = NA)) +
+  theme(plot.margin = unit(c(1,1,1,1), "cm"))
+```
