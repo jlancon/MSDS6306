@@ -1,0 +1,160 @@
+---
+title: "MSDS 6306 Assignment 10:"
+author: "J Lancon"
+date: "November 19, 2017"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+    fig_caption: yes
+---
+### Assignment: Unit 10 Assignment
+#### Course: MSDS 6306 - 405 Doing Data Science
+#### Project Description: Exploratory Data
+##### GitHub Repository: https://github.com/jlancon/MSDS6306/tree/master/Homework/Unit_10
+
+&nbsp;&nbsp;&nbsp; **Problem #1:** Your organization is responsible for building new VA hospitals in the mainland of the United States. Begin by exploring the Substance Abuse Health Services Survey 2015.
+&nbsp;&nbsp;&nbsp; The National Mental Health Services Survey (N-MHSS) is an annual survey designed to collect statistical information on the numbers and characteristics of all known mental health treatment facilities within the 50 States, the District of Columbia, and the U.S. territories.  
+
+&nbsp;&nbsp;&nbsp; Navigate to [Substance Abuse & Mental Health website's Data Archieves](https://datafiles.samhsa.gov/study-dataset/national-mental-health-services-survey-2015-n-mhss-2015-ds0001-nid17098). Download the 2015 survey (N-MHSS-2015-DS0001).
+
+* Review Codebook PDF for explanation of variables.
+* Import survey dataset and parse down the dataset to only include pertinent variables.  
+* Clean observation; eliminating empty fields and fields with improper data.  
+* Create and display a list of all US states/territories that contain facilities that participated in the survey.  
+* We are only interested in VA hospitals; therfore, filter data to only include Verterans Administration (VA) Medical Centers.  
+* Filter the data further, including only mainland locations: Alaska, Hawaii, and US territories should be omitted.  
+* Create a barchart using filtered dataset. Vary bar colors by state.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+library(knitr)
+#library(stringr)
+#library(rvest)
+library(ggplot2)
+```
+
+
+##### Initialize Directories
+```{r setdirectory, eval=FALSE}
+## Initialize Directories
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+```
+##### Reading Dataset
+&nbsp;&nbsp;&nbsp;**Reading N-MHSS dataset** into R
+Dataset:  N-MHSS-2015-DS0001-data-r.rda
+```{r loading_dataset, echo=TRUE}
+load("./DataSets/N-MHSS-2015-DS0001-data/N-MHSS-2015-DS0001-data-r.rda")
+```
+##### Respondents States/Territories
+&nbsp;&nbsp;&nbsp;**States/Territories** List of US States and Territories that contain respondents to the N-MHSS survey.
+
+```{r StateTerritoryList}
+StateTerritory <- unique(mh2015_puf$LST)
+StateTerritory
+```
+
+##### Parsing Dataset
+&nbsp;&nbsp;&nbsp;**States/Type** Parsing down the dataset to only include pertinent variables (Location-Mainland US, Type of facility). Sort data by number of facilities in each mainland US state.
+```{r parsingDataset}
+# Veterans Administration Medical Centers #
+VACenters <- mh2015_puf[grep("Veteran.",mh2015_puf$FACILITYTYPE),]
+
+VACentersTotal <- VACenters[,c("LST","FACILITYTYPE")]
+
+# Number of facilities in continental US: Removal of HI, AK, GU, AS, PR, VI #
+VACentersMainland <- VACentersTotal[- grep("HI|AK|AS|GU|PR|VI",VACentersTotal$LST),]
+#str(VACentersMainland)
+
+VACentersMainland$LST <- droplevels(VACentersMainland$LST)
+#str(VACentersPar)
+
+VACTable <- as.data.frame(table(VACentersMainland$LST))
+VACTable <- VACTable[order(VACTable$Freq, decreasing = FALSE), ]
+colnames(VACTable) <- c("States", "Freq")
+#str(VACTable)
+```
+
+##### Plot Number of Facilites in Each State
+&nbsp;&nbsp;&nbsp;**Frequency Plot** Plotting the number of VA medical facilities in each US Mainland state.
+```{r Plot_FreqBarChart}
+ggplot(data=VACTable, aes(x=reorder(States, order(VACTable$Freq, decreasing=FALSE)),y=Freq, fill=States)) +
+  geom_bar(position="dodge",stat="identity",show.legend=F) + 
+#    scale_colour_gradientn(colours = terrain.colors(10)) +
+  coord_flip() +
+  xlab("States (Mainland)") +
+  ylim(c(0,max(VACTable$Freq+1))) +
+  ylab("Number of VA Facilities") +
+  ggtitle("Verterans Administration (VA) Medical Centers\n Quantity per State (Mainland US)") +
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size=14)) +
+  theme(axis.title = element_text(face="bold", size=8)) +
+  theme(axis.text.x = element_text(size = 10))+
+  theme(axis.text.y = element_text(size=6))+
+  theme(axis.title.y = element_text(face="bold", size=10)) +
+  theme(panel.border = element_rect(linetype = "solid", fill = NA)) +
+  theme(plot.margin = unit(c(0.1,1,1,0.1), "cm"))
+```
+
+&nbsp;&nbsp;&nbsp; **Problem #2:** These results may be misleading, as bigger states may have more hospitals.  To normalize the data, below is a bar chart depicting the number of VA hospitals per 1000 square miles of state territory.  
+&nbsp;&nbsp;&nbsp; An additional dataset, statesize.csv will be merged with parsed dataset.  This new dataset includes a variable for amount of land area in each state.
+
+
+* Import statesize dataset.  
+* Clean observation; eliminating empty fields, fields with improper data.  
+* Formatting observations (State Abbreviations); standarizing observations for properly merging datasets. 
+* Create a barchart using filtered dataset. Vary bar colors by Regions.
+
+##### Reading Dataset
+&nbsp;&nbsp;&nbsp;**Reading statesize dataset** into R
+Dataset:  statesize.csv
+```{r StateSize}
+StateSize <- read.csv('./DataSets/statesize.csv')
+```
+##### Tidying/Merging Dataset
+&nbsp;&nbsp;&nbsp;**Tidying/Merging** Statesize dataset with existing dataset.  
+
+* Cleaning State's 'Abbreviation' observations, to remove whitespaces.  
+* Merge Datasets  
+* Create a density variable by dividing the number of facilities in each state by the amount of land area in that state.
+
+```{r cleaningMerging}
+colnames(VACTable) <- c('Abbrev','Freq') 
+VACTable$Abbrev <- trimws(VACTable$Abbrev)
+VAStateInfo <- merge(VACTable,StateSize, by="Abbrev",all=FALSE)
+
+VAStateInfo$Density <- VAStateInfo$Freq / (VAStateInfo$SqMiles/1000)
+
+VAStateInfo <- VAStateInfo[order(VAStateInfo$Density, decreasing = FALSE), ]
+```
+
+##### Plot VA Facility Density in Each State
+&nbsp;&nbsp;&nbsp;**Density Plot** Plotting the number of VA medical facilities per 1000 square miles in each US Mainland state.
+
+```{r plotdensity}
+
+ggplot(data=VAStateInfo, aes(x=reorder(Abbrev, order(VAStateInfo$Density, decreasing=FALSE)),y=Density, fill=Region)) +
+  geom_bar(position="dodge",stat="identity") +
+  scale_fill_brewer(palette="Spectral") +
+  coord_flip() +
+  xlab("States (Mainland)") +
+  ylim(c(0,max(VAStateInfo$Density*1.05))) +
+  ylab("VA Facilities per 1000 sqMiles") +
+  ggtitle("Verterans Administration (VA) Medical Centers\n Qunatity per State's Area (Mainland US)") +
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size=14)) +
+  theme(axis.title = element_text(face="bold", size=10)) +
+  theme(axis.title.y = element_text(face="bold", size=10)) +
+  theme(axis.text.x = element_text(size = 10))+
+  theme(axis.text.y = element_text(size=6))+
+  theme(panel.border = element_rect(linetype = "solid", fill = NA)) +
+  theme(plot.margin = unit(c(0.5,1,1,0.5), "cm"))
+```
+
+&nbsp;&nbsp;&nbsp;**Visual Review** Reviewing the bar plot of density of the number of VA medical facilities per 1000 square miles in each US Mainland state, there appears to be a trend showing states in the Northeast to have many more VA facilities per 1000sqmile of area.  This may be due to several reasons:
+
+* Higher population density  
+* Higher veteran population (either active and/or retired)  
+* More governmental facilities/installations  
+* Differing Insurance requirements  
+
+&nbsp;&nbsp;&nbsp;Additional data (population, military installation locations, etc.) should be incorporated into the dataset, to get better insight into the reasons behind the differences. 
