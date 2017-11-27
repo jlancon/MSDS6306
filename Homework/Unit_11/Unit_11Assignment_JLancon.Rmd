@@ -14,9 +14,9 @@ output:
 ##### GitHub Repository: https://github.com/jlancon/MSDS6306/tree/master/Homework/Unit_11
 
 &nbsp;&nbsp;&nbsp; **Problem #1:** You have access to sample datasets of prominent stocks in R. We are using EuStockMarkets for this exercise.  
-&nbsp;&nbsp;&nbsp; The dataset had Daily closing prices of Major European Stock Indices, 1991-1998: Germany DAX (Ibis), Switzerland SMI, France CAC, and UK FTSE. From this dataset, pull specifically the DAX index. You can find additional information about this dataset from ??EuStockMarkets.  
+&nbsp;&nbsp;&nbsp; The dataset has daily closing prices of Major European Stock Indices, 1991-1998: Germany DAX (Ibis), Switzerland SMI, France CAC, and UK FTSE. From this dataset, pull specifically the DAX index. Additional information about this dataset from ??EuStockMarkets.  
 
-* We are only interested in German DAX index; therfore, filter data to only include this dataset.  
+* We are interested in German DAX index; therfore, filter data to only include this dataset.  
 * Create a plot of the dataset.  
 * In 1997, an event happened that is worth noting; add a vertical line that notes this date.  
 * Decompose the multiplicative time series into its components (i.e, trend, seasonality, random).
@@ -38,7 +38,7 @@ library(dygraphs)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ```
 ##### Loading Dataset
-&nbsp;&nbsp;&nbsp;**Loading EuStockMarkets dataset** into R
+&nbsp;&nbsp;&nbsp;**Loading EuStockMarkets dataset** into R.  
 Dataset:  EuStockMarkets
 ```{r DAXData}
 eu_stocks <- EuStockMarkets[,"DAX"]
@@ -60,8 +60,8 @@ autoplot(eu_stocks,
     geom_vline(xintercept = 1997, col="red")
 ```
 
-##### Plotting DAX Decomposed Data
-&nbsp;&nbsp;&nbsp;**Plotting DAX indices decomposed** multiplicative times series dataset components (trend, seasonality, random). Trend line for data shall be 'blue'. Added vertical line to chart(red) on 01/01/1997, to note same event that occurred at this time.
+##### Plotting DAX Decomposed Time-Series Data
+&nbsp;&nbsp;&nbsp;**Plotting DAX indices decomposed** multiplicative times series dataset components (trend, seasonality, random). Trend lines for data shall be 'blue'. Added vertical line to chart(red) on 01/01/1997, to note same event that occurred at this time.
 ```{r DAXDecomposePlot}
 decompDAX <- decompose(eu_stocks, type=c("multiplicative"))
 autoplot(decompDAX)+
@@ -73,14 +73,17 @@ autoplot(decompDAX)+
 &nbsp;&nbsp;&nbsp; **Problem #2:** You have access to sample datasets by loading library(fpp2) in R.  
 &nbsp;&nbsp;&nbsp; The dataset contains the Maximum annual temperatures (°C) at Moorabbin Airport, Melbourne, from 1971-2016. 
 
-* We are only interested in data after 1990; therfore, filter data to only include this dataset.  
+* We are only interested in data post 1990; therfore, filter data to only include this dataset.  
 * Create a plot of the dataset.  
 * Utilize SES function in R to predict the next five years of maximum temperature at the Moorabbin Airport.  
 * Create a plot showing: original data, fitted/predicted values for 1990-2016, and forecasted temperatures for 2017-2021.
-* Document AICc value; for later use.  
+* Document AICc value.
+* Utilize Holt function in R to predict the next five years of maximum temperature at the Moorabbin Airport.  
+* Create a plot showing: original data, fitted/predicted values for 1990-2016, and forecasted temperatures for 2017-2021.  
+* Document AICc value and compare it against SES prediction model.
 
 ##### Loading / Parsing Dataset
-&nbsp;&nbsp;&nbsp;**Loading maxtemp dataset** from library(fpp2) into R.  Parse dataset to only include data from 1990-present.
+&nbsp;&nbsp;&nbsp;**Load maxtemp dataset** from library(fpp2) into R.  Parse dataset to only include data from 1990-present.  
 Dataset:  maxtemp
 ```{r MaxTemp}
 #start(maxtemp)
@@ -115,7 +118,7 @@ Maxtemp.fcast.factors
 ```
 
 ##### Plotting Forecast Data (HoltWinters)
-&nbsp;&nbsp;&nbsp;**Plotting prediction/forecast data** using HoltWinters (holt) function in R to predict the next five years of maximum temperature at the Moorabbin Airport. Use damped linear trend and Initial state values set to 'optimal'. Original data trend line shall be black and predicted value line shall be 'blue'.
+&nbsp;&nbsp;&nbsp;**Plotting prediction/forecast data** using HoltWinters (holt) function in R, predict the next five years of maximum temperature at the Moorabbin Airport. Use damped linear trend and Initial state values set to 'optimal'. Original data trend line shall be black and predicted value line shall be 'blue'.
 In same plot, include forcasted temperatures for the Moorabbin Airport for 2017-2021.
 
 ```{r MaxTempPredictHW}
@@ -136,8 +139,10 @@ MaxtempHW.factors <- MaxtempHW$model["aicc"]
 MaxtempHW.factors
 ```
 
-?????Discuss AICc values for the two options
-
+##### AICc Comparison (SES vs HoltWinters)
+&nbsp;&nbsp;&nbsp;**AICc Values** do not have much meaning by itself. It is only as a comparison to AICc values for another fitted model.  
+AICc for the SES model is: 141.5 while the Holt model is: 144.58.  Both models are poor fits for the data, mainly due to the lack of datapoints in the learning model.  Additional data points are needed to increase prediction accuracy.  
+Of the two models created, the Damped Holt Method appears to better predict the dataset, even though it has a higer AICc value.
 
 &nbsp;&nbsp;&nbsp; **Problem #3:** Read in two datasets: Unit11TimeSeries_Ollivander.csv and Unit11TimeSeries_Gregorovitch.csv. The datasets contain Wands sold each year between 1970 and 2016.  
 
@@ -189,7 +194,7 @@ Both series are presented on the same graph, with different colors and labeling 
 Area shaded depicts the timeframe when Voldemort was revived (1995-1999).
 ```{r PlotWandData}
 WandSales.ts <-cbind.xts(Olliv.ts$Ollivander,Greg.ts$Gregorovitch)
-dygraph(WandSales.ts, main="Wand Sales 1970 - 2016", ylab="Sales", xlab="Year") %>%
+dygraph(WandSales.ts, main="Wand Sales 1970 - 2016", ylab="Units Sold", xlab="Year") %>%
   dySeries("Gregorovitch", color = 'Red') %>%
   dySeries("Ollivander", color = 'Green') %>%
   dyRangeSelector(height=80) %>%
