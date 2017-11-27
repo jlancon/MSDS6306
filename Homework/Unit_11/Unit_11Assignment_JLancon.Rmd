@@ -1,0 +1,199 @@
+---
+title: "MSDS 6306 Assignment 11:"
+author: "J Lancon"
+date: "November 27, 2017"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
+    fig_caption: yes
+---
+### Assignment: Unit 11 Assignment
+#### Course: MSDS 6306 - 405 Doing Data Science
+#### Project Description: Time Series Data
+##### GitHub Repository: https://github.com/jlancon/MSDS6306/tree/master/Homework/Unit_11
+
+&nbsp;&nbsp;&nbsp; **Problem #1:** You have access to sample datasets of prominent stocks in R. We are using EuStockMarkets for this exercise.  
+&nbsp;&nbsp;&nbsp; The dataset had Daily closing prices of Major European Stock Indices, 1991-1998: Germany DAX (Ibis), Switzerland SMI, France CAC, and UK FTSE. From this dataset, pull specifically the DAX index. You can find additional information about this dataset from ??EuStockMarkets.  
+
+* We are only interested in German DAX index; therfore, filter data to only include this dataset.  
+* Create a plot of the dataset.  
+* In 1997, an event happened that is worth noting; add a vertical line that notes this date.  
+* Decompose the multiplicative time series into its components (i.e, trend, seasonality, random).
+* Create a plot of all decomposed components, noting the same 1997 event.  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+library(knitr)
+library(fpp2)
+library(ggplot2)
+library(forecast)
+library(xts)
+library(dygraphs)
+```
+
+##### Initialize Directories
+```{r setdirectory, eval=FALSE}
+## Initialize Directories
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+```
+##### Loading Dataset
+&nbsp;&nbsp;&nbsp;**Loading EuStockMarkets dataset** into R
+Dataset:  EuStockMarkets
+```{r DAXData}
+eu_stocks <- EuStockMarkets[,"DAX"]
+#start(eu_stocks)
+#end(eu_stocks)
+#head(eu_stocks)
+```
+##### Plotting DAX Data
+&nbsp;&nbsp;&nbsp;**Plotting DAX indices dataset** for 1990-1998. Trend line for data shall be 'blue'. Added vertical line to chart(red) on 01/01/1997, to note an event that occurred at this time.
+```{r DAXPlot}
+autoplot(eu_stocks,
+    main='DAX Closing Prices 1990-1998',
+    xlab='Years',
+    ylab='DAX Index\n Daily Closing Value',
+    col='blue',
+    cex.lab = .9)+
+    theme(plot.title = element_text(hjust = 0.5, face="bold", size=14)) +
+    geom_line(linetype="solid", color="blue", size=.5)+
+    geom_vline(xintercept = 1997, col="red")
+```
+
+##### Plotting DAX Decomposed Data
+&nbsp;&nbsp;&nbsp;**Plotting DAX indices decomposed** multiplicative times series dataset components (trend, seasonality, random). Trend line for data shall be 'blue'. Added vertical line to chart(red) on 01/01/1997, to note same event that occurred at this time.
+```{r DAXDecomposePlot}
+decompDAX <- decompose(eu_stocks, type=c("multiplicative"))
+autoplot(decompDAX)+
+  geom_line(linetype="solid", color="blue", size=.5)+
+  geom_vline(xintercept = 1997, col="red")+
+  theme(axis.title = element_text(face="bold", size=8))
+```
+
+&nbsp;&nbsp;&nbsp; **Problem #2:** You have access to sample datasets by loading library(fpp2) in R.  
+&nbsp;&nbsp;&nbsp; The dataset contains the Maximum annual temperatures (°C) at Moorabbin Airport, Melbourne, from 1971-2016. 
+
+* We are only interested in data after 1990; therfore, filter data to only include this dataset.  
+* Create a plot of the dataset.  
+* Utilize SES function in R to predict the next five years of maximum temperature at the Moorabbin Airport.  
+* Create a plot showing: original data, fitted/predicted values for 1990-2016, and forecasted temperatures for 2017-2021.
+* Document AICc value; for later use.  
+
+##### Loading / Parsing Dataset
+&nbsp;&nbsp;&nbsp;**Loading maxtemp dataset** from library(fpp2) into R.  Parse dataset to only include data from 1990-present.
+Dataset:  maxtemp
+```{r MaxTemp}
+#start(maxtemp)
+#end(maxtemp)
+Maxtemp.Post1990 <- window(maxtemp, 1990)
+#str(Maxtemp.Post1990)
+#class(Maxtemp.Post1990)
+#head(Maxtemp.Post1990)
+```
+
+##### Plotting Forecast Data (SES)
+&nbsp;&nbsp;&nbsp;**Plotting prediction/forecast data** using SES function in R to predict the next five years of maximum temperature at the Moorabbin Airport. Original data trend line shall be black and predicted value line shall be 'blue'. Initial state values set to 'optimal'.
+In same plot, include forcasted temperatures for the Moorabbin Airport for 2017-2021.
+```{r MaxTempPredictSES}
+Maxtemp.fcast <- ses(Maxtemp.Post1990, h=5, initial='optimal',level=FALSE)
+plot(Maxtemp.fcast,
+     main='Max Temperature - Melbourne 1990-2016\n5 yr Forecast (SES)',
+     xlab='Years',
+     ylab='Max Temperature °C',
+     col='blue',
+     cex.lab = .9)
+  lines(fitted(Maxtemp.fcast), col='Blue')
+  lines(Maxtemp.Post1990, col='black')
+```
+
+##### AICc Value
+&nbsp;&nbsp;&nbsp;**Recording AICc value** using SES function with post 1990 data only. Second-Order Akaike Information Criterion.
+```{r AICC_ValueSES}
+#summary(Maxtemp.fcast)
+Maxtemp.fcast.factors <- Maxtemp.fcast$model["aicc"]
+Maxtemp.fcast.factors
+```
+
+##### Plotting Forecast Data (HoltWinters)
+&nbsp;&nbsp;&nbsp;**Plotting prediction/forecast data** using HoltWinters (holt) function in R to predict the next five years of maximum temperature at the Moorabbin Airport. Use damped linear trend and Initial state values set to 'optimal'. Original data trend line shall be black and predicted value line shall be 'blue'.
+In same plot, include forcasted temperatures for the Moorabbin Airport for 2017-2021.
+
+```{r MaxTempPredictHW}
+MaxtempHW <- holt(Maxtemp.Post1990, h=5, damped= TRUE, initial="optimal", level = FALSE)
+
+plot(MaxtempHW,
+     main='Max Temperature - Melbourne 1990-2016\n5 yr Forecast (Damped Holt Method)',
+     xlab='Years',
+     ylab='Max Temperature °C',
+     col='blue',
+     cex.lab = .9)
+ lines(Maxtemp.Post1990,col='Black')
+ lines(MaxtempHW$fitted, col = 'Blue')
+```
+
+```{r AICC_ValueHW}
+MaxtempHW.factors <- MaxtempHW$model["aicc"]
+MaxtempHW.factors
+```
+
+?????Discuss AICc values for the two options
+
+
+&nbsp;&nbsp;&nbsp; **Problem #3:** Read in two datasets: Unit11TimeSeries_Ollivander.csv and Unit11TimeSeries_Gregorovitch.csv. The datasets contain Wands sold each year between 1970 and 2016.  
+
+&nbsp;&nbsp;&nbsp; The dataset contain Wands sold each year between 1970 and 2016. 
+
+* Load datasets into R.
+* Convert datasets to timeseries, which will require date variable formatting [Date class] and creation of xts (time series) object.  
+* Bind the two xts object together, to form a single time series object.
+* Create a plot, using dygraph function.  
+&nbsp;&nbsp;&nbsp;   1. Label graph properly  
+&nbsp;&nbsp;&nbsp;   2. Label each Series with proper wand-maker's name.  
+&nbsp;&nbsp;&nbsp;   3. Stack the graphs and modify lines using different colors  
+&nbsp;&nbsp;&nbsp;   4. Activate range selector  
+&nbsp;&nbsp;&nbsp;   5. Use shading to illuminate approximately when Voldemort was revived (1995-1999)  
+&nbsp;&nbsp;&nbsp;   6. Enable highlighting on graph.  
+
+##### Loading Dataset
+&nbsp;&nbsp;&nbsp;**Loading Wand Maker's Yearly Sales** datasets into R.  
+Dataset:  
+Unit11TimeSeries_Ollivander.csv  
+Unit11TimeSeries_Gregorovitch.csv
+```{r ReadWandData}
+Greg <- read.csv("./DataSet/Unit11TimeSeries_Gregorovitch.csv", header = FALSE)
+Olliv <-read.csv("./DataSet/Unit11TimeSeries_Ollivander.csv", header = FALSE)
+```
+##### Formatting Dataset-Date
+&nbsp;&nbsp;&nbsp;**Converting Date variable** from character class to date class, for proper use in timeseries object  
+```{r formatdata}
+Greg$V1 <- as.Date(Greg$V1,format="%m/%d/%Y")
+#str(Greg)
+Olliv$V1 <- as.Date(Olliv$V1,format="%m/%d/%Y")
+#str(Olliv)
+```
+##### Formatting Dataset-Timeseries
+&nbsp;&nbsp;&nbsp;**Converting dataframe to Timeseries** object, utilizing the xts function. Also properly naming variables with manufacturer's name and year of production.  
+```{r CreateTS}
+Greg.ts <- xts::xts(Greg, frequency=1, order.by = Greg$V1)
+colnames(Greg.ts) <- c("Year","Gregorovitch")
+#str(Greg.ts)
+
+Olliv.ts <- xts::xts(Olliv, frequency=1, order.by = Olliv$V1)
+colnames(Olliv.ts) <- c("Year","Ollivander")
+#str(Olliv.ts)
+```
+
+##### Plotting Wand Sales Data
+&nbsp;&nbsp;&nbsp;**Plotting Wand Yearly Sales Data** for 1970 thru 2016, using dygraph function with active range selector and highlighting enabled.  
+Both series are presented on the same graph, with different colors and labeling to distinguish the two.  Each series is labeled with the wand-maker's name.  
+Area shaded depicts the timeframe when Voldemort was revived (1995-1999).
+```{r PlotWandData}
+WandSales.ts <-cbind.xts(Olliv.ts$Ollivander,Greg.ts$Gregorovitch)
+dygraph(WandSales.ts, main="Wand Sales 1970 - 2016", ylab="Sales", xlab="Year") %>%
+  dySeries("Gregorovitch", color = 'Red') %>%
+  dySeries("Ollivander", color = 'Green') %>%
+  dyRangeSelector(height=80) %>%
+  dyShading(from = "1995-01-01", to = "1999-01-01", color = "lightblue") %>%
+  dyHighlight(highlightSeriesOpts = list(strokeWidth=1.5))
+```
+
